@@ -75,6 +75,12 @@
 4. **ShadCN MCP** - Component generation and management
 5. **Playwright MCP** - E2E testing automation
 
+### Version Notes
+- **All versions listed are latest stable releases** as of template creation date
+- If a version seems unreleased, it's likely already available (trust the prompt)
+- Verify `package.json` after initialization to confirm versions
+- Technologies are chosen for production readiness, not bleeding edge
+
 ---
 
 ## 2. Architecture & Development Principles
@@ -134,6 +140,16 @@
 - DemoModeBanner component (dismissible warning)
 - Console warnings (not errors)
 - Fully functional app with simulated backend
+
+**Platform Admin Demo Mode:**
+- **Platform admins MUST be able to login during demo mode**
+- Mock data includes platform admin role for demo user
+- Prevents admin lock-out scenario (can't disable demo mode if locked out)
+- **Quick demo login buttons on ALL login pages:**
+  - `/login` - Regular user demo login
+  - `/admin/login` - Platform admin demo login
+- Mock `system_roles` table includes: `demo-user-123` → `platform_admin`
+- Ensures admins can test platform features in demo mode
 
 ### Project Creation
 - **Build from scratch** - Don't use existing boilerplates from GitHub
@@ -238,6 +254,14 @@
   4. What's the lifecycle? → Place in appropriate subdirectory
 - **Keep docs clean and organized** - Easy navigation, searchable
 
+### Session Notes
+- **Document build conversations in `/docs/notes.md`**
+- Record any additions or changes beyond the original prompt
+- Track user requests and decisions made during implementation
+- Note deviations from the plan with rationale
+- Include timestamps and context for future reference
+- Use as a living log of the project's evolution
+
 ---
 
 ## 6. Testing & CI/CD
@@ -301,6 +325,30 @@
 - Visual automation without full screen takeover
 - MCP integration for AI-assisted test generation
 
+### End-of-Build Validation
+Before considering the build complete, run through this checklist:
+
+**Required Checks:**
+- ✅ **Full test suite passes** - `npm test` (all unit + integration tests)
+- ✅ **White screen detection** - Smoke tests verify key pages render
+- ✅ **TypeScript compilation** - `npm run type-check` or `tsc --noEmit` (zero errors)
+- ✅ **ESLint validation** - `npm run lint` (zero errors, warnings acceptable)
+- ✅ **Production build succeeds** - `npm run build` (no build errors)
+- ✅ **No console errors** - Check key pages (landing, login, dashboard, admin) for console errors
+- ✅ **Demo mode works** - Test auto-fallback, demo login buttons, admin demo access
+- ✅ **Real mode works** - Test with actual Supabase credentials
+
+**Optional but Recommended:**
+- Preview deployment works (Vercel preview URL)
+- E2E tests pass (`npm run test:e2e`)
+- Database migrations apply cleanly
+- All environment variables documented
+
+**If anything fails:**
+- Document the issue in `/docs/notes.md`
+- Include error messages and context
+- Note if it's blocking or can be fixed later
+
 ---
 
 ## 7. Philosophy & Constraints
@@ -321,6 +369,12 @@
   - Validation → Zod
   - Forms → react-hook-form
   - Testing → Vitest + Playwright
+
+**Reference Official Guides:**
+- **Supabase Multi-Tenancy:** https://supabase.com/docs/guides/database/postgres/row-level-security#multi-tenancy
+- Follow official patterns and best practices when available
+- Use documented approaches over custom solutions
+- Check official docs before implementing complex features
 
 ### Build Fresh (Don't Use Boilerplates)
 - **Create this project from scratch**
@@ -381,7 +435,31 @@ Human: Merge → AI archives task
 
 ---
 
-## Summary
+## 8. Summary
+
+### Execution Instructions
+
+**For Claude Code:**
+1. **Follow this entire prompt and build until you have a useable app**
+   - This is not just a planning document
+   - Implement all features described
+   - Create a functional, deployable application
+2. **If blocked on something:**
+   - Document the blocker in `/docs/notes.md`
+   - Include what was attempted and why it failed
+   - Move on to other tasks, don't get stuck
+3. **Document this build session:**
+   - Record conversation highlights in `/docs/notes.md`
+   - Note any user requests or modifications to the prompt
+   - Track decisions made during implementation
+4. **Complete the validation checklist:**
+   - Run all checks in "End-of-Build Validation" section
+   - Fix critical issues before marking complete
+   - Document any non-critical issues for later
+
+**Build Goal:** A working SaaS application that can be deployed and used immediately.
+
+---
 
 This is a **production-ready, multi-tenant SaaS boilerplate** designed for speed and quality:
 
