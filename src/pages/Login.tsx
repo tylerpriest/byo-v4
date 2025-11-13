@@ -1,5 +1,7 @@
 import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
 import { useAuth } from '@/features/auth/AuthContext'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -13,33 +15,45 @@ import {
   CardFooter,
 } from '@/components/ui/card'
 import { getDemoModeStatus } from '@/lib/supabase'
+import { loginSchema, type LoginFormData } from '@/lib/validations'
+import { useToast } from '@/components/ui/use-toast'
 
 export function LoginPage() {
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const { signIn } = useAuth()
   const navigate = useNavigate()
   const demoStatus = getDemoModeStatus()
+  const { toast } = useToast()
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setError('')
+  const {
+    register,
+    handleSubmit: handleFormSubmit,
+    formState: { errors },
+    setError,
+  } = useForm<LoginFormData>({
+    resolver: zodResolver(loginSchema),
+  })
+
+  const handleSubmit = async (data: LoginFormData) => {
     setLoading(true)
 
     try {
-      await signIn(email, password)
+      await signIn(data.email, data.password)
       navigate('/dashboard')
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to sign in')
+      const message = err instanceof Error ? err.message : 'Failed to sign in'
+      setError('root', { message })
+      toast({
+        title: 'Error',
+        description: message,
+        variant: 'destructive',
+      })
     } finally {
       setLoading(false)
     }
   }
 
   const handleDemoLogin = async (isAdmin = false) => {
-    setError('')
     setLoading(true)
 
     try {
@@ -47,7 +61,12 @@ export function LoginPage() {
       await signIn(demoEmail, 'demo-password')
       navigate('/dashboard')
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to sign in')
+      const message = err instanceof Error ? err.message : 'Failed to sign in'
+      toast({
+        title: 'Error',
+        description: message,
+        variant: 'destructive',
+      })
     } finally {
       setLoading(false)
     }
@@ -61,33 +80,33 @@ export function LoginPage() {
           <CardDescription>Enter your email and password to access your account</CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleFormSubmit(handleSubmit)} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
               <Input
                 id="email"
                 type="email"
                 placeholder="name@example.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
+                {...register('email')}
                 disabled={loading}
               />
+              {errors.email && <p className="text-sm text-destructive">{errors.email.message}</p>}
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
-              <Input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                disabled={loading}
-              />
+              <div className="flex items-center justify-between">
+                <Label htmlFor="password">Password</Label>
+                <Link to="/reset-password" className="text-sm text-primary hover:underline">
+                  Forgot password?
+                </Link>
+              </div>
+              <Input id="password" type="password" {...register('password')} disabled={loading} />
+              {errors.password && (
+                <p className="text-sm text-destructive">{errors.password.message}</p>
+              )}
             </div>
-            {error && (
+            {errors.root && (
               <div className="text-sm text-destructive bg-destructive/10 p-3 rounded-md">
-                {error}
+                {errors.root.message}
               </div>
             )}
             <Button type="submit" className="w-full" disabled={loading}>

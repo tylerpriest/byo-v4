@@ -1,5 +1,7 @@
 import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
 import { useAuth } from '@/features/auth/AuthContext'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -12,37 +14,42 @@ import {
   CardContent,
   CardFooter,
 } from '@/components/ui/card'
+import { signupSchema, type SignupFormData } from '@/lib/validations'
+import { useToast } from '@/components/ui/use-toast'
 
 export function SignupPage() {
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [confirmPassword, setConfirmPassword] = useState('')
-  const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const { signUp } = useAuth()
   const navigate = useNavigate()
+  const { toast } = useToast()
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setError('')
+  const {
+    register,
+    handleSubmit: handleFormSubmit,
+    formState: { errors },
+    setError,
+  } = useForm<SignupFormData>({
+    resolver: zodResolver(signupSchema),
+  })
 
-    if (password !== confirmPassword) {
-      setError('Passwords do not match')
-      return
-    }
-
-    if (password.length < 6) {
-      setError('Password must be at least 6 characters')
-      return
-    }
-
+  const handleSubmit = async (data: SignupFormData) => {
     setLoading(true)
 
     try {
-      await signUp(email, password)
+      await signUp(data.email, data.password)
+      toast({
+        title: 'Success',
+        description: 'Account created successfully!',
+      })
       navigate('/dashboard')
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to sign up')
+      const message = err instanceof Error ? err.message : 'Failed to sign up'
+      setError('root', { message })
+      toast({
+        title: 'Error',
+        description: message,
+        variant: 'destructive',
+      })
     } finally {
       setLoading(false)
     }
@@ -56,46 +63,40 @@ export function SignupPage() {
           <CardDescription>Enter your information to get started</CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleFormSubmit(handleSubmit)} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
               <Input
                 id="email"
                 type="email"
                 placeholder="name@example.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
+                {...register('email')}
                 disabled={loading}
               />
+              {errors.email && <p className="text-sm text-destructive">{errors.email.message}</p>}
             </div>
             <div className="space-y-2">
               <Label htmlFor="password">Password</Label>
-              <Input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                disabled={loading}
-                minLength={6}
-              />
+              <Input id="password" type="password" {...register('password')} disabled={loading} />
+              {errors.password && (
+                <p className="text-sm text-destructive">{errors.password.message}</p>
+              )}
             </div>
             <div className="space-y-2">
               <Label htmlFor="confirmPassword">Confirm Password</Label>
               <Input
                 id="confirmPassword"
                 type="password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                required
+                {...register('confirmPassword')}
                 disabled={loading}
-                minLength={6}
               />
+              {errors.confirmPassword && (
+                <p className="text-sm text-destructive">{errors.confirmPassword.message}</p>
+              )}
             </div>
-            {error && (
+            {errors.root && (
               <div className="text-sm text-destructive bg-destructive/10 p-3 rounded-md">
-                {error}
+                {errors.root.message}
               </div>
             )}
             <Button type="submit" className="w-full" disabled={loading}>
