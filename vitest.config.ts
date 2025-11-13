@@ -11,14 +11,27 @@ export default defineConfig({
     exclude: ['node_modules', 'dist', 'tests/e2e/**'],
     coverage: {
       provider: 'v8',
-      reporter: ['text', 'json', 'html'],
-      exclude: ['node_modules/', 'src/test/', '**/*.d.ts', '**/*.config.*', '**/mockData', 'dist/'],
+      reporter: ['text', 'json', 'html', 'lcov'],
+      exclude: [
+        'node_modules/',
+        'src/test/',
+        '**/*.d.ts',
+        '**/*.config.*',
+        '**/mockData',
+        'dist/',
+        'src/main.tsx',
+        'src/App.tsx',
+        '**/*.stories.tsx',
+        '**/types.ts',
+      ],
       thresholds: {
-        statements: 30,
-        branches: 30,
-        functions: 30,
-        lines: 30,
+        statements: 60,
+        branches: 55,
+        functions: 55,
+        lines: 60,
       },
+      // Per-file thresholds for critical paths
+      perFile: true,
     },
   },
   resolve: {
