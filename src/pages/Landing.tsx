@@ -1,10 +1,12 @@
 import { Link } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
+import { Header } from '@/components/Header'
 
 export function LandingPage() {
   return (
     <div className="min-h-screen">
+      <Header variant="landing" />
       {/* Hero Section */}
       <div className="container mx-auto px-4 py-16">
         <div className="max-w-4xl mx-auto text-center space-y-8">
