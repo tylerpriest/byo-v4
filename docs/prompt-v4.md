@@ -68,12 +68,26 @@
 - **Supabase Project** - Production database
 
 ### MCP Ecosystem (Model Context Protocol)
-**5 Mandatory MCPs for AI-assisted development:**
+**5 MCPs for AI-assisted development:**
 1. **GitHub MCP** - PR/issue management, automation
+   - https://github.com/github/github-mcp-server
 2. **Vercel MCP** - Deployment automation, preview URLs
+   - https://vercel.com/docs/mcp/vercel-mcp
 3. **Supabase MCP** - Database operations, migrations
+   - https://supabase.com/docs/guides/getting-started/mcp
+   - https://github.com/supabase-community/supabase-mcp
 4. **ShadCN MCP** - Component generation and management
+   - https://ui.shadcn.com/docs/mcp
 5. **Playwright MCP** - E2E testing automation
+   - https://github.com/microsoft/playwright-mcp
+
+### CLI Tools
+**Official command-line interfaces for the tech stack:**
+- **Supabase CLI** - https://supabase.com/docs/guides/local-development/cli/getting-started
+- **Vercel CLI** - https://vercel.com/docs/cli
+- **shadcn/ui CLI** - https://ui.shadcn.com/docs/cli
+- **Playwright CLI** - https://playwright.dev/docs/intro
+- **Vitest CLI** - https://vitest.dev/guide/
 
 ### Version Notes
 - **All versions listed are latest stable releases** as of template creation date
