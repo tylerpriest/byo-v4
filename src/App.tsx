@@ -15,6 +15,7 @@ import { AccountPage } from '@/pages/Account'
 import { SettingsPage } from '@/pages/Settings'
 import { AdminDashboard } from '@/pages/admin/AdminDashboard'
 import { UserManagementPage } from '@/pages/admin/UserManagementPage'
+import { SystemSettingsPage } from '@/pages/admin/SystemSettingsPage'
 import { OrganizationsListPage } from '@/pages/organizations/OrganizationsListPage'
 import { CreateOrganizationPage } from '@/pages/organizations/CreateOrganizationPage'
 import { OrganizationDetailPage } from '@/pages/organizations/OrganizationDetailPage'
@@ -72,6 +73,16 @@ function App() {
                 <ProtectedRoute>
                   <AdminRoute>
                     <UserManagementPage />
+                  </AdminRoute>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/settings"
+              element={
+                <ProtectedRoute>
+                  <AdminRoute>
+                    <SystemSettingsPage />
                   </AdminRoute>
                 </ProtectedRoute>
               }

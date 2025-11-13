@@ -4,6 +4,7 @@ import { usePlatformRole } from '@/features/rbac/useRoles'
 import { Button } from '@/components/ui/button'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
 import { getDemoModeStatus, setAdminDemoModeOverride } from '@/lib/supabase'
+import { ActivityLog } from '@/components/ActivityLog'
 import { useState } from 'react'
 
 export function AdminDashboard() {
@@ -62,10 +63,13 @@ export function AdminDashboard() {
                 <CardDescription>View and manage all organizations</CardDescription>
               </CardHeader>
             </Card>
-            <Card className="opacity-50">
+            <Card
+              className="cursor-pointer hover:border-primary transition-colors"
+              onClick={() => navigate('/admin/settings')}
+            >
               <CardHeader>
                 <CardTitle>System Settings</CardTitle>
-                <CardDescription>Feature flags and configurations (Coming soon)</CardDescription>
+                <CardDescription>Feature flags and configurations</CardDescription>
               </CardHeader>
             </Card>
           </div>
@@ -177,6 +181,9 @@ export function AdminDashboard() {
               </div>
             </CardContent>
           </Card>
+
+          {/* Activity Log */}
+          <ActivityLog maxHeight="500px" limit={10} />
 
           {/* Admin Actions */}
           <Card>
