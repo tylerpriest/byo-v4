@@ -5,7 +5,18 @@ import reactHooks from 'eslint-plugin-react-hooks'
 import reactRefresh from 'eslint-plugin-react-refresh'
 
 export default tseslint.config(
-  { ignores: ['dist', 'node_modules', 'coverage', 'playwright-report', '.husky'] },
+  {
+    ignores: [
+      'dist',
+      'node_modules',
+      'coverage',
+      'playwright-report',
+      '.husky',
+      'tests/e2e/**',
+      'playwright.config.ts',
+      'vitest.config.ts',
+    ],
+  },
   {
     extends: [js.configs.recommended, ...tseslint.configs.recommendedTypeChecked],
     files: ['**/*.{ts,tsx}'],

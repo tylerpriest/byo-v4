@@ -1,10 +1,12 @@
 import { useAuth } from '@/features/auth/AuthContext'
+import { usePlatformRole } from '@/features/rbac/useRoles'
 import { Button } from '@/components/ui/button'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
 import { useNavigate } from 'react-router-dom'
 
 export function DashboardPage() {
   const { user, signOut } = useAuth()
+  const { isPlatformAdmin } = usePlatformRole()
   const navigate = useNavigate()
 
   const handleSignOut = async () => {
@@ -18,9 +20,22 @@ export function DashboardPage() {
       <header className="border-b bg-background">
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
           <h1 className="text-2xl font-bold">Dashboard</h1>
-          <Button onClick={handleSignOut} variant="outline">
-            Sign Out
-          </Button>
+          <div className="flex gap-2">
+            <Button onClick={() => navigate('/account')} variant="outline">
+              Account
+            </Button>
+            <Button onClick={() => navigate('/settings')} variant="outline">
+              Settings
+            </Button>
+            {isPlatformAdmin && (
+              <Button onClick={() => navigate('/admin')} variant="default">
+                Admin
+              </Button>
+            )}
+            <Button onClick={() => void handleSignOut()} variant="outline">
+              Sign Out
+            </Button>
+          </div>
         </div>
       </header>
 
