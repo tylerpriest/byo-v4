@@ -19,7 +19,7 @@ export function LoginPage() {
     void (async () => {
       try {
         await signIn(email, password)
-        void navigate('/dashboard')
+        await Promise.resolve(navigate('/dashboard'))
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to sign in')
       } finally {
@@ -36,7 +36,7 @@ export function LoginPage() {
       try {
         const demoEmail = isAdmin ? 'admin@example.com' : 'demo@example.com'
         await signIn(demoEmail, 'demo-password')
-        void navigate('/dashboard')
+        await Promise.resolve(navigate('/dashboard'))
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to sign in')
       } finally {
