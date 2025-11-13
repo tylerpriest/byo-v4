@@ -20,7 +20,8 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
     "noUncheckedIndexedAccess": true,
-    "exactOptionalPropertyTypes": true,
+    /* Temporarily disabled due to Supabase type inference issues */
+    /* "exactOptionalPropertyTypes": true, */
     "noImplicitReturns": true,
     "noImplicitOverride": true,
 

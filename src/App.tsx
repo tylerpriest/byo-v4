@@ -13,6 +13,10 @@ import { DashboardPage } from '@/pages/Dashboard'
 import { AccountPage } from '@/pages/Account'
 import { SettingsPage } from '@/pages/Settings'
 import { AdminDashboard } from '@/pages/admin/AdminDashboard'
+import { UserManagementPage } from '@/pages/admin/UserManagementPage'
+import { OrganizationsListPage } from '@/pages/organizations/OrganizationsListPage'
+import { CreateOrganizationPage } from '@/pages/organizations/CreateOrganizationPage'
+import { OrganizationDetailPage } from '@/pages/organizations/OrganizationDetailPage'
 
 function App() {
   return (
@@ -56,6 +60,40 @@ function App() {
                   <AdminRoute>
                     <AdminDashboard />
                   </AdminRoute>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/users"
+              element={
+                <ProtectedRoute>
+                  <AdminRoute>
+                    <UserManagementPage />
+                  </AdminRoute>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/organizations"
+              element={
+                <ProtectedRoute>
+                  <OrganizationsListPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/organizations/new"
+              element={
+                <ProtectedRoute>
+                  <CreateOrganizationPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/organizations/:id"
+              element={
+                <ProtectedRoute>
+                  <OrganizationDetailPage />
                 </ProtectedRoute>
               }
             />

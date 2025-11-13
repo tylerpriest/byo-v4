@@ -42,6 +42,34 @@ export function AdminDashboard() {
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8">
         <div className="max-w-6xl mx-auto space-y-8">
+          {/* Quick Links */}
+          <div className="grid md:grid-cols-3 gap-4">
+            <Card
+              className="cursor-pointer hover:border-primary transition-colors"
+              onClick={() => navigate('/admin/users')}
+            >
+              <CardHeader>
+                <CardTitle>User Management</CardTitle>
+                <CardDescription>Manage users and assign platform roles</CardDescription>
+              </CardHeader>
+            </Card>
+            <Card
+              className="cursor-pointer hover:border-primary transition-colors"
+              onClick={() => navigate('/organizations')}
+            >
+              <CardHeader>
+                <CardTitle>Organizations</CardTitle>
+                <CardDescription>View and manage all organizations</CardDescription>
+              </CardHeader>
+            </Card>
+            <Card className="opacity-50">
+              <CardHeader>
+                <CardTitle>System Settings</CardTitle>
+                <CardDescription>Feature flags and configurations (Coming soon)</CardDescription>
+              </CardHeader>
+            </Card>
+          </div>
+
           {/* Admin Info */}
           <Card>
             <CardHeader>
