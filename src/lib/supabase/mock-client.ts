@@ -88,7 +88,50 @@ const mockSystemSettings: Database['public']['Tables']['system_settings']['Row']
 ]
 
 // Mock session state
-let currentSession: Session | null = null
+const MOCK_SESSION_KEY = 'mock-supabase-session'
+
+// Load session from localStorage
+function loadSessionFromStorage(): Session | null {
+  try {
+    const stored = localStorage.getItem(MOCK_SESSION_KEY)
+    return stored ? (JSON.parse(stored) as Session) : null
+  } catch {
+    return null
+  }
+}
+
+// Save session to localStorage
+function saveSessionToStorage(session: Session | null) {
+  try {
+    if (session) {
+      localStorage.setItem(MOCK_SESSION_KEY, JSON.stringify(session))
+    } else {
+      localStorage.removeItem(MOCK_SESSION_KEY)
+    }
+  } catch (error) {
+    console.error('Failed to save session to localStorage:', error)
+  }
+}
+
+let currentSession: Session | null = loadSessionFromStorage()
+
+// Auth state change listeners
+type AuthChangeCallback = (event: string, session: Session | null) => void
+const authStateListeners: AuthChangeCallback[] = []
+
+// Helper to notify all listeners
+function notifyAuthStateChange(event: string, session: Session | null) {
+  // Save to storage whenever session changes
+  saveSessionToStorage(session)
+
+  authStateListeners.forEach((callback) => {
+    try {
+      callback(event, session)
+    } catch (error) {
+      console.error('Error in auth state change callback:', error)
+    }
+  })
+}
 
 /**
  * Creates a mock Supabase client for demo mode
@@ -126,6 +169,9 @@ export function createMockSupabaseClient(): SupabaseClient<Database> {
           user,
         }
 
+        // Notify listeners of sign up
+        notifyAuthStateChange('SIGNED_IN', currentSession)
+
         return { data: { user, session: currentSession }, error: null }
       },
       signInWithPassword: async ({ email }: { email: string; password: string }) => {
@@ -140,6 +186,10 @@ export function createMockSupabaseClient(): SupabaseClient<Database> {
             refresh_token: 'mock-refresh-token',
             user: user!,
           }
+
+          // Notify listeners of sign in
+          notifyAuthStateChange('SIGNED_IN', currentSession)
+
           return { data: { user, session: currentSession }, error: null }
         }
 
@@ -155,6 +205,10 @@ export function createMockSupabaseClient(): SupabaseClient<Database> {
       signOut: async () => {
         await Promise.resolve() // Async method must have await
         currentSession = null
+
+        // Notify listeners of sign out
+        notifyAuthStateChange('SIGNED_OUT', null)
+
         return { error: null }
       },
       resetPasswordForEmail: async () => {
@@ -165,17 +219,34 @@ export function createMockSupabaseClient(): SupabaseClient<Database> {
         await Promise.resolve() // Async method must have await
         if (currentSession) {
           currentSession.user = { ...currentSession.user, ...attributes }
+
+          // Notify listeners of user update
+          notifyAuthStateChange('USER_UPDATED', currentSession)
+
           return { data: { user: currentSession.user }, error: null }
         }
         return { data: { user: null }, error: new Error('Not authenticated') }
       },
       onAuthStateChange: (callback: (event: string, session: Session | null) => void) => {
+        // Add to listeners
+        authStateListeners.push(callback)
+
         // Initial callback
         callback('INITIAL_SESSION', currentSession)
 
         // Return unsubscribe function
         return {
-          data: { subscription: { id: 'mock', unsubscribe: () => {} } },
+          data: {
+            subscription: {
+              id: 'mock',
+              unsubscribe: () => {
+                const index = authStateListeners.indexOf(callback)
+                if (index > -1) {
+                  authStateListeners.splice(index, 1)
+                }
+              },
+            },
+          },
         }
       },
       setSession: async () => {
