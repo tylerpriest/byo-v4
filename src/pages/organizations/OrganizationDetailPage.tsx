@@ -165,8 +165,17 @@ export function OrganizationDetailPage() {
           <Button variant="ghost" onClick={() => navigate('/organizations')} className="mb-4">
             ← Back to Organizations
           </Button>
-          <h1 className="text-3xl font-bold">{organization.name}</h1>
-          <p className="text-muted-foreground">/{organization.slug}</p>
+          <div className="flex items-start justify-between">
+            <div>
+              <h1 className="text-3xl font-bold">{organization.name}</h1>
+              <p className="text-muted-foreground">/{organization.slug}</p>
+            </div>
+            {(isOwner || isAdmin) && (
+              <Button variant="outline" onClick={() => navigate(`/organizations/${id}/settings`)}>
+                Settings
+              </Button>
+            )}
+          </div>
         </div>
 
         <div className="grid gap-6 md:grid-cols-2">

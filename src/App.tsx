@@ -18,6 +18,7 @@ import { UserManagementPage } from '@/pages/admin/UserManagementPage'
 import { OrganizationsListPage } from '@/pages/organizations/OrganizationsListPage'
 import { CreateOrganizationPage } from '@/pages/organizations/CreateOrganizationPage'
 import { OrganizationDetailPage } from '@/pages/organizations/OrganizationDetailPage'
+import { OrganizationSettingsPage } from '@/pages/organizations/OrganizationSettingsPage'
 
 function App() {
   return (
@@ -88,6 +89,14 @@ function App() {
               element={
                 <ProtectedRoute>
                   <CreateOrganizationPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/organizations/:id/settings"
+              element={
+                <ProtectedRoute>
+                  <OrganizationSettingsPage />
                 </ProtectedRoute>
               }
             />
