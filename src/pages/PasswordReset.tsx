@@ -1,5 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -13,25 +15,34 @@ import {
 } from '@/components/ui/card'
 import { getSupabaseClient } from '@/lib/supabase'
 import { useToast } from '@/components/ui/use-toast'
+import { passwordResetSchema, type PasswordResetFormData } from '@/lib/validations'
 
 export function PasswordResetPage() {
-  const [email, setEmail] = useState('')
   const [loading, setLoading] = useState(false)
   const [sent, setSent] = useState(false)
+  const [sentEmail, setSentEmail] = useState('')
   const { toast } = useToast()
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+  const {
+    register,
+    handleSubmit: handleFormSubmit,
+    formState: { errors },
+  } = useForm<PasswordResetFormData>({
+    resolver: zodResolver(passwordResetSchema),
+  })
+
+  const handleSubmit = async (data: PasswordResetFormData) => {
     setLoading(true)
 
     try {
       const supabase = getSupabaseClient()
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      const { error } = await supabase.auth.resetPasswordForEmail(data.email, {
         redirectTo: `${window.location.origin}/reset-password`,
       })
 
       if (error) throw error
 
+      setSentEmail(data.email)
       setSent(true)
       toast({
         title: 'Check your email',
@@ -55,7 +66,7 @@ export function PasswordResetPage() {
           <CardHeader>
             <CardTitle>Check your email</CardTitle>
             <CardDescription>
-              We've sent a password reset link to <strong>{email}</strong>
+              We've sent a password reset link to <strong>{sentEmail}</strong>
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -82,18 +93,17 @@ export function PasswordResetPage() {
           <CardDescription>Enter your email and we'll send you a reset link</CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleFormSubmit(handleSubmit)} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
               <Input
                 id="email"
                 type="email"
                 placeholder="name@example.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
+                {...register('email')}
                 disabled={loading}
               />
+              {errors.email && <p className="text-sm text-destructive">{errors.email.message}</p>}
             </div>
             <Button type="submit" className="w-full" disabled={loading}>
               {loading ? 'Sending...' : 'Send Reset Link'}

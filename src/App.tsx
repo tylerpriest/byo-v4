@@ -9,6 +9,7 @@ import { LandingPage } from '@/pages/Landing'
 import { LoginPage } from '@/pages/Login'
 import { SignupPage } from '@/pages/Signup'
 import { PasswordResetPage } from '@/pages/PasswordReset'
+import { EmailVerificationPage } from '@/pages/auth/EmailVerification'
 import { DashboardPage } from '@/pages/Dashboard'
 import { AccountPage } from '@/pages/Account'
 import { SettingsPage } from '@/pages/Settings'
@@ -29,6 +30,7 @@ function App() {
             <Route path="/login" element={<LoginPage />} />
             <Route path="/signup" element={<SignupPage />} />
             <Route path="/reset-password" element={<PasswordResetPage />} />
+            <Route path="/verify-email" element={<EmailVerificationPage />} />
             <Route
               path="/dashboard"
               element={
