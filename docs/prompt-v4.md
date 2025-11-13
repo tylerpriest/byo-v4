@@ -245,12 +245,17 @@
 ```
 
 ### Documentation Rules
-- **CLAUDE.md in root** - AI assistant context (ONLY doc in root)
-- **Never docs in root** unless absolutely required (99% no)
+- **Allowed in root (5 files only):**
+  1. `README.md` - Project overview and quick start
+  2. `CLAUDE.md` - AI assistant context
+  3. `CONTRIBUTING.md` - Contribution guidelines
+  4. `CHANGELOG.md` - Version history and release notes
+  5. `LICENSE` - Project license
+- **All other docs go in `/docs/`** - No exceptions
 - **Before creating ANY document:**
   1. Can I update an existing doc? → Update, don't create
   2. Is this SSOT? → Make it canonical
-  3. Belongs in root? → 99% no, goes in `/docs/`
+  3. Belongs in root? → Check the 5 allowed files list
   4. What's the lifecycle? → Place in appropriate subdirectory
 - **Keep docs clean and organized** - Easy navigation, searchable
 
