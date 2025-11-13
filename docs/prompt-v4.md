@@ -1,6 +1,6 @@
 # BYO (Build Your Own) - SaaS Boilerplate Template v4
 
-**Version:** 4.0
+**Version:** 4.01
 **Date:** 2025-11-13
 **Purpose:** Production-ready multi-tenant SaaS starter template
 
@@ -185,7 +185,7 @@
 - **Organization Dashboard** - Workspace-specific analytics and content
 
 ### Layout Components
-- **Collapsible Sidebar** - Feature navigation (ShadCN `sidebar-07` block)
+- **Collapsible Sidebar** - Feature navigation
 - **Header** - Top bar with user menu, notifications, search
 - **Footer** - Links, legal, copyright
 
@@ -360,9 +360,9 @@ Before considering the build complete, run through this checklist:
   - Storage → Supabase Storage
   - Realtime → Supabase Realtime subscriptions
 - **If ShadCN has it, use it:**
-  - Dashboard → `dashboard-01` block
-  - Sidebar → `sidebar-07` block
-  - Auth → `login-03` block
+  - Dashboard → `dashboard` block
+  - Sidebar → `sidebar` block
+  - Auth → `login` block
   - Forms → Pre-built form components
 - **If it's battle-tested, leverage it:**
   - Logging → Pino
