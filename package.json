@@ -12,7 +12,8 @@
     "test": "vitest",
     "test:coverage": "vitest --coverage",
     "test:e2e": "playwright test",
-    "supabase:gen": "supabase gen types typescript --local > src/lib/database.types.ts"
+    "supabase:gen": "supabase gen types typescript --local > src/lib/database.types.ts",
+    "prepare": "husky"
   },
   "dependencies": {
     "@radix-ui/react-toast": "^1.2.15",
