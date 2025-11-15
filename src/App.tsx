@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider } from '@/features/auth/context/AuthContext'
 import { DemoModeBanner } from '@/components/DemoModeBanner'
 import { Toaster } from '@/components/ui/toaster'
+import { AppLayout } from '@/components/layout/AppLayout'
 import { LoginPage } from '@/features/auth/pages/LoginPage'
 import { SignupPage } from '@/features/auth/pages/SignupPage'
 import { AdminLoginPage } from '@/features/auth/pages/AdminLoginPage'
@@ -10,6 +11,8 @@ import { AdminDashboardPage } from '@/features/admin/pages/AdminDashboardPage'
 import { LandingPage } from '@/features/landing/pages/LandingPage'
 import { OrganizationListPage } from '@/features/organizations/pages/OrganizationListPage'
 import { OrganizationDetailPage } from '@/features/organizations/pages/OrganizationDetailPage'
+import { AccountPage } from '@/features/account/pages/AccountPage'
+import { SettingsPage } from '@/features/settings/pages/SettingsPage'
 import { ProtectedRoute } from '@/features/auth/components/ProtectedRoute'
 
 function App() {
@@ -25,12 +28,38 @@ function App() {
           <Route path="/signup" element={<SignupPage />} />
           <Route path="/admin/login" element={<AdminLoginPage />} />
 
-          {/* Protected routes */}
+          {/* Protected routes with AppLayout */}
           <Route
             path="/dashboard"
             element={
               <ProtectedRoute>
-                <DashboardPage />
+                <AppLayout>
+                  <DashboardPage />
+                </AppLayout>
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Account routes */}
+          <Route
+            path="/account"
+            element={
+              <ProtectedRoute>
+                <AppLayout>
+                  <AccountPage />
+                </AppLayout>
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Settings routes */}
+          <Route
+            path="/settings"
+            element={
+              <ProtectedRoute>
+                <AppLayout>
+                  <SettingsPage />
+                </AppLayout>
               </ProtectedRoute>
             }
           />
@@ -40,7 +69,9 @@ function App() {
             path="/organizations"
             element={
               <ProtectedRoute>
-                <OrganizationListPage />
+                <AppLayout>
+                  <OrganizationListPage />
+                </AppLayout>
               </ProtectedRoute>
             }
           />
@@ -48,7 +79,9 @@ function App() {
             path="/organizations/:id"
             element={
               <ProtectedRoute>
-                <OrganizationDetailPage />
+                <AppLayout>
+                  <OrganizationDetailPage />
+                </AppLayout>
               </ProtectedRoute>
             }
           />
@@ -58,7 +91,9 @@ function App() {
             path="/admin"
             element={
               <ProtectedRoute requirePlatformAdmin>
-                <AdminDashboardPage />
+                <AppLayout>
+                  <AdminDashboardPage />
+                </AppLayout>
               </ProtectedRoute>
             }
           />
