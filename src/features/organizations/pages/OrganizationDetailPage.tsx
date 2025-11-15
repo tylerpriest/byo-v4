@@ -4,6 +4,7 @@ import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { useOrganizationMembers, useOrganizationInvitations } from '../hooks/useOrganizations'
 import { usePermissions } from '@/features/auth/hooks/usePermissions'
+import { useToast } from '@/components/ui/use-toast'
 
 const inviteSchema = z.object({
   email: z.string().email('Invalid email address'),
@@ -15,6 +16,7 @@ type InviteFormData = z.infer<typeof inviteSchema>
 export function OrganizationDetailPage() {
   const { id } = useParams<{ id: string }>()
   const organizationId = id || ''
+  const { toast } = useToast()
 
   const permissions = usePermissions(organizationId)
   const { members, updateMemberRole, removeMember } = useOrganizationMembers(organizationId)
@@ -47,8 +49,17 @@ export function OrganizationDetailPage() {
   const handleRoleChange = async (memberId: string, newRole: string) => {
     try {
       await updateMemberRole(memberId, newRole)
+      toast({
+        title: 'Role updated',
+        description: 'Member role has been updated successfully.',
+        variant: 'default',
+      })
     } catch (err: any) {
-      alert(`Failed to update role: ${err.message}`)
+      toast({
+        title: 'Failed to update role',
+        description: err.message || 'An error occurred while updating the role.',
+        variant: 'destructive',
+      })
     }
   }
 
@@ -56,8 +67,17 @@ export function OrganizationDetailPage() {
     if (confirm(`Remove ${memberName} from this organization?`)) {
       try {
         await removeMember(memberId)
+        toast({
+          title: 'Member removed',
+          description: 'Member has been removed from the organization.',
+          variant: 'default',
+        })
       } catch (err: any) {
-        alert(`Failed to remove member: ${err.message}`)
+        toast({
+          title: 'Failed to remove member',
+          description: err.message || 'An error occurred while removing the member.',
+          variant: 'destructive',
+        })
       }
     }
   }
@@ -66,8 +86,17 @@ export function OrganizationDetailPage() {
     if (confirm(`Revoke invitation for ${email}?`)) {
       try {
         await revokeInvitation(invitationId)
+        toast({
+          title: 'Invitation revoked',
+          description: 'The invitation has been revoked successfully.',
+          variant: 'default',
+        })
       } catch (err: any) {
-        alert(`Failed to revoke invitation: ${err.message}`)
+        toast({
+          title: 'Failed to revoke invitation',
+          description: err.message || 'An error occurred while revoking the invitation.',
+          variant: 'destructive',
+        })
       }
     }
   }

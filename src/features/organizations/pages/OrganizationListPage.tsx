@@ -4,6 +4,7 @@ import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { useOrganizations } from '../hooks/useOrganizations'
 import { useAuth } from '@/features/auth/context/AuthContext'
+import { useToast } from '@/components/ui/use-toast'
 
 const createOrgSchema = z.object({
   name: z.string().min(2, 'Organization name must be at least 2 characters'),
@@ -18,6 +19,7 @@ type CreateOrgFormData = z.infer<typeof createOrgSchema>
 export function OrganizationListPage() {
   const navigate = useNavigate()
   const { user } = useAuth()
+  const { toast } = useToast()
   const { organizations, loading, createOrganization, deleteOrganization } = useOrganizations()
   const [showCreateForm, setShowCreateForm] = useState(false)
   const [error, setError] = useState('')
@@ -50,8 +52,17 @@ export function OrganizationListPage() {
     if (confirm(`Are you sure you want to delete "${name}"? This action cannot be undone.`)) {
       try {
         await deleteOrganization(id)
+        toast({
+          title: 'Organization deleted',
+          description: 'The organization has been deleted successfully.',
+          variant: 'default',
+        })
       } catch (err: any) {
-        alert(`Failed to delete: ${err.message}`)
+        toast({
+          title: 'Failed to delete organization',
+          description: err.message || 'An error occurred while deleting the organization.',
+          variant: 'destructive',
+        })
       }
     }
   }

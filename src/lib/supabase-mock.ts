@@ -13,6 +13,9 @@ const DEMO_ORG_ID = 'demo-org-456'
 // Mock session
 let mockSession: any = null
 
+// Auth state change listeners
+const authListeners: Array<(event: string, session: any) => void> = []
+
 // Mock data store
 const mockData = {
   user_profiles: [
@@ -110,6 +113,13 @@ export function createMockSupabaseClient() {
             },
           }
 
+          // Notify all auth listeners
+          setTimeout(() => {
+            authListeners.forEach((listener) => {
+              listener('SIGNED_IN', mockSession)
+            })
+          }, 0)
+
           return {
             data: { session: mockSession, user: mockSession.user },
             error: null,
@@ -139,6 +149,13 @@ export function createMockSupabaseClient() {
           user: newUser,
         }
 
+        // Notify all auth listeners
+        setTimeout(() => {
+          authListeners.forEach((listener) => {
+            listener('SIGNED_IN', mockSession)
+          })
+        }, 0)
+
         return {
           data: { session: mockSession, user: newUser },
           error: null,
@@ -148,6 +165,14 @@ export function createMockSupabaseClient() {
       signOut: async () => {
         console.log('[Mock Supabase] signOut called')
         mockSession = null
+
+        // Notify all auth listeners
+        setTimeout(() => {
+          authListeners.forEach((listener) => {
+            listener('SIGNED_OUT', null)
+          })
+        }, 0)
+
         return { error: null }
       },
 
@@ -161,13 +186,26 @@ export function createMockSupabaseClient() {
 
       onAuthStateChange: (callback: any) => {
         console.log('[Mock Supabase] onAuthStateChange registered')
-        // Immediately call with current session
+
+        // Add listener to array
+        authListeners.push(callback)
+
+        // Immediately call with current session if exists
         if (mockSession) {
-          callback('SIGNED_IN', mockSession)
+          setTimeout(() => callback('SIGNED_IN', mockSession), 0)
         }
 
         return {
-          data: { subscription: { unsubscribe: () => {} } },
+          data: {
+            subscription: {
+              unsubscribe: () => {
+                const index = authListeners.indexOf(callback)
+                if (index > -1) {
+                  authListeners.splice(index, 1)
+                }
+              },
+            },
+          },
         }
       },
     },

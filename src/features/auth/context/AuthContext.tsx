@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react'
 import { supabase } from '@/lib/supabase-client'
 import type { Database } from '@/lib/database.types'
+import { authLogger } from '@/lib/logger'
 
 type UserProfile = Database['public']['Tables']['user_profiles']['Row']
 type SystemRole = Database['public']['Tables']['system_roles']['Row']
@@ -60,7 +61,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         orgMemberships: orgMemberships || [],
       }
     } catch (error) {
-      console.error('Error fetching user data:', error)
+      authLogger.error({ error, userId }, 'Failed to fetch user data')
       return null
     }
   }

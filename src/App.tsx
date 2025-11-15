@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider } from '@/features/auth/context/AuthContext'
 import { DemoModeBanner } from '@/components/DemoModeBanner'
+import { Toaster } from '@/components/ui/toaster'
 import { LoginPage } from '@/features/auth/pages/LoginPage'
 import { SignupPage } from '@/features/auth/pages/SignupPage'
 import { AdminLoginPage } from '@/features/auth/pages/AdminLoginPage'
@@ -16,6 +17,7 @@ function App() {
     <AuthProvider>
       <BrowserRouter>
         <DemoModeBanner />
+        <Toaster />
         <Routes>
           {/* Public routes */}
           <Route path="/" element={<LandingPage />} />
