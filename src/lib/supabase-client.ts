@@ -17,12 +17,21 @@ function isDemoMode(): boolean {
     return true
   }
 
-  // 2. Auto-fallback if Supabase credentials missing
+  // 2. Auto-fallback if Supabase credentials missing or invalid
   const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
   const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
 
-  if (!supabaseUrl || !supabaseAnonKey) {
-    console.log('⚠️  Demo mode auto-enabled (missing Supabase credentials)')
+  // Check for missing, undefined, or placeholder values
+  const isUrlInvalid = !supabaseUrl ||
+                       supabaseUrl.includes('xxxxx') ||
+                       supabaseUrl === 'https://xxxxx.supabase.co'
+
+  const isKeyInvalid = !supabaseAnonKey ||
+                       supabaseAnonKey.includes('...') ||
+                       supabaseAnonKey.startsWith('eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...')
+
+  if (isUrlInvalid || isKeyInvalid) {
+    console.log('⚠️  Demo mode auto-enabled (missing or invalid Supabase credentials)')
     return true
   }
 

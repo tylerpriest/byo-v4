@@ -7,6 +7,8 @@ import { AdminLoginPage } from '@/features/auth/pages/AdminLoginPage'
 import { DashboardPage } from '@/features/dashboard/pages/DashboardPage'
 import { AdminDashboardPage } from '@/features/admin/pages/AdminDashboardPage'
 import { LandingPage } from '@/features/landing/pages/LandingPage'
+import { OrganizationListPage } from '@/features/organizations/pages/OrganizationListPage'
+import { OrganizationDetailPage } from '@/features/organizations/pages/OrganizationDetailPage'
 import { ProtectedRoute } from '@/features/auth/components/ProtectedRoute'
 
 function App() {
@@ -27,6 +29,24 @@ function App() {
             element={
               <ProtectedRoute>
                 <DashboardPage />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Organization routes */}
+          <Route
+            path="/organizations"
+            element={
+              <ProtectedRoute>
+                <OrganizationListPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/organizations/:id"
+            element={
+              <ProtectedRoute>
+                <OrganizationDetailPage />
               </ProtectedRoute>
             }
           />
