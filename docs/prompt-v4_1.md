@@ -1,8 +1,18 @@
 # BYO (Build Your Own) - SaaS Boilerplate Template v4
 
-**Version:** 4.02
-**Date:** 2025-11-13
+**Version:** 4.1
+**Date:** 2025-11-15
 **Purpose:** Production-ready multi-tenant SaaS starter template
+
+**Changelog (v4.1):**
+- Added Environment Variables reference table
+- Added Build Phase Sequence with dependencies
+- Added Test-First Workflow clarity
+- Added ShadCN Block-to-Feature mapping
+- Added Supabase Type Generation workflow
+- Added Migration workflow with exact commands
+- Added Demo Mode implementation details
+- Updated validation checklist with exact npm commands
 
 ---
 
@@ -95,6 +105,37 @@
 - Verify `package.json` after initialization to confirm versions
 - Technologies are chosen for production readiness, not bleeding edge
 
+### Environment Variables Reference
+
+**Required environment variables for local development and deployment:**
+
+| Variable | Purpose | Example Value | Where to Get | Required |
+|----------|---------|---------------|--------------|----------|
+| `VITE_SUPABASE_URL` | Supabase project API URL | `https://xxxxx.supabase.co` | Supabase Dashboard → Settings → API | Yes* |
+| `VITE_SUPABASE_ANON_KEY` | Supabase public anon key | `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...` | Supabase Dashboard → Settings → API | Yes* |
+| `VITE_DEMO_MODE` | Force enable demo mode | `true` or `false` | Set in `.env.local` manually | No |
+
+**\*Note:** Missing both `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` triggers auto-fallback to demo mode.
+
+**Setup:**
+```bash
+# Create .env.local file
+cp .env.example .env.local
+
+# Add your Supabase credentials
+VITE_SUPABASE_URL=https://xxxxx.supabase.co
+VITE_SUPABASE_ANON_KEY=eyJhbGciOi...
+VITE_DEMO_MODE=false  # Optional, defaults to auto-detect
+```
+
+**Verification:**
+```bash
+npm run dev
+# Check console for:
+# - "✅ Connected to Supabase" (real mode)
+# - "⚠️  Running in demo mode" (demo mode)
+```
+
 ---
 
 ## 2. Architecture & Development Principles
@@ -165,6 +206,77 @@
 - Mock `system_roles` table includes: `demo-user-123` → `platform_admin`
 - Ensures admins can test platform features in demo mode
 
+### Demo Mode Implementation Checklist
+
+**File Structure:**
+```
+/src/lib/
+  supabase.ts           # Real Supabase client factory
+  supabase-mock.ts      # Mock Supabase client (demo mode)
+  supabase-client.ts    # Client selector (real vs mock)
+
+/src/components/
+  DemoModeBanner.tsx    # Warning banner component
+  DemoLoginButton.tsx   # One-click demo login button
+```
+
+**Mock Client Requirements (`src/lib/supabase-mock.ts`):**
+- Mock `auth.signInWithPassword()` → Returns demo user with platform_admin role
+- Mock `auth.signOut()` → Clears demo session
+- Mock `auth.getSession()` → Returns demo session or null
+- Mock `.from('organizations').select()` → Returns demo organizations
+- Mock `.from('organization_members').select()` → Returns demo memberships
+- Mock `.from('system_roles').select()` → Returns `demo-user-123` with `platform_admin`
+- Mock `.from('system_settings').select()` → Returns demo mode toggle setting
+
+**Demo Mode Detection (`src/lib/supabase-client.ts`):**
+```typescript
+// 1. Check admin dashboard toggle (system_settings table)
+// 2. Check VITE_DEMO_MODE environment variable
+// 3. Check if VITE_SUPABASE_URL or VITE_SUPABASE_ANON_KEY missing
+// Return: Real client or Mock client
+```
+
+**Demo Login Button (`src/components/DemoLoginButton.tsx`):**
+- Display on `/login` and `/admin/login` pages
+- Label: "Demo Login" (regular) or "Admin Demo Login" (admin page)
+- onClick: Call `auth.signInWithPassword('demo@example.com', 'demo')`
+- Only visible when demo mode is active
+
+**Demo Mode Banner (`src/components/DemoModeBanner.tsx`):**
+- Fixed position at top of app
+- Warning icon + "Demo Mode Active - Data is simulated"
+- Dismissible (stores preference in localStorage)
+- Background: Yellow/orange for visibility
+- Only visible when demo mode is active
+
+**Verification Steps:**
+```bash
+# Test Auto-Fallback
+rm .env.local  # Remove Supabase credentials
+npm run dev
+# Expected: Demo mode banner appears, demo login buttons visible
+
+# Test Demo Login
+Click "Demo Login" button
+# Expected: Logged in as demo user, dashboard accessible
+
+# Test Admin Demo Login
+Click "Admin Demo Login" button on /admin/login
+# Expected: Logged in with platform_admin role, admin dashboard accessible
+
+# Test Real Mode
+# Add valid VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY to .env.local
+npm run dev
+# Expected: No demo banner, no demo buttons, real Supabase connection
+```
+
+**Testing:**
+- Unit test: Mock client returns correct demo data
+- E2E test: Demo login flow works end-to-end
+- E2E test: Admin demo login grants platform_admin access
+- E2E test: Demo mode banner appears and is dismissible
+
 ### Project Creation
 - **Build from scratch** - Don't use existing boilerplates from GitHub
 - Understand every piece of the architecture
@@ -225,6 +337,176 @@
 - Customize when necessary (theming, variants)
 - Maintain consistent design language
 - Accessibility built-in (ARIA, keyboard nav)
+
+### ShadCN Block Discovery & Selection
+
+**Philosophy:** Discover available blocks dynamically, evaluate options thoughtfully, and choose the best fit for each feature.
+
+#### Discovery Methods (Choose One)
+
+**1. Interactive CLI (Recommended for browsing):**
+```bash
+npx shadcn@latest add
+# Lists all available blocks interactively
+# Use arrow keys to browse, search by typing
+# Preview descriptions before selecting
+```
+
+**2. ShadCN MCP (Automated discovery):**
+```bash
+# Use ShadCN MCP to list available blocks
+mcp shadcn list blocks
+
+# Add blocks via MCP
+mcp shadcn add [block-name]
+```
+
+**3. Visual Browse (Best for design review):**
+- Visit: https://ui.shadcn.com/blocks
+- Browse categories: Dashboard, Sidebar, Login, Settings, etc.
+- View live previews and code
+- Note block names for CLI installation
+
+---
+
+#### Feature-to-Block Selection Guide
+
+**For each major feature, THINK DEEPLY about which block best serves the use case:**
+
+##### **Admin Dashboard**
+**What to look for:**
+- Data density: Chart-heavy vs table-focused vs metrics cards
+- Layout: Sidebar nav vs top nav vs split-pane
+- Complexity: Simple overview vs detailed analytics
+
+**Evaluation criteria:**
+- Will admins need to see many data points at once? → Chart-heavy dashboard
+- Is navigation more important than data? → Sidebar-focused layout
+- Will this scale to 10+ widgets? → Consider grid-based layouts
+
+**Target location:** `/src/features/admin/components/`
+
+##### **App Sidebar (Navigation)**
+**What to look for:**
+- Collapsible: Icons only vs full labels vs hybrid
+- Submenus: Nested navigation vs flat list
+- Responsiveness: Mobile drawer vs desktop-only
+
+**Evaluation criteria:**
+- How many nav items exist? (5-10 = flat, 10+ = nested)
+- Is screen real estate precious? → Collapsible sidebar
+- Mobile-first app? → Drawer-based sidebar
+
+**Target location:** `/src/components/layout/`
+
+##### **Login/Auth Pages**
+**What to look for:**
+- Layout: Centered card vs split-screen vs illustrated
+- Complexity: Simple form vs multi-step vs OAuth heavy
+- Branding: Minimal vs brand-forward vs image-heavy
+
+**Evaluation criteria:**
+- Is this a B2B SaaS (professional) or consumer app? → Affects visual weight
+- Do we need to inspire trust? → Consider illustrated/branded layouts
+- Mobile conversion critical? → Minimal, focused design
+
+**Target location:** `/src/features/auth/components/`
+
+##### **Settings Page**
+**What to look for:**
+- Organization: Tabbed vs single-page vs wizard
+- Density: Compact forms vs spacious cards vs grouped sections
+- Updates: Real-time save vs explicit save button
+
+**Evaluation criteria:**
+- How many settings exist? (5-10 = single-page, 10+ = tabbed)
+- Are settings grouped logically? → Tab-based organization
+- Do users edit frequently? → Consider inline editing patterns
+
+**Target location:** `/src/features/settings/components/`
+
+##### **User Profile/Account**
+**What to look for:**
+- Edit mode: Inline editing vs modal vs dedicated edit page
+- Information density: Avatar + basics vs detailed profile
+- Actions: Quick actions visible vs menu-driven
+
+**Evaluation criteria:**
+- Is profile central to the app experience? → Detailed, prominent design
+- Frequent updates expected? → Inline editing
+- Security-focused? → Separate edit flow with confirmation
+
+**Target location:** `/src/features/account/components/`
+
+---
+
+#### Selection Workflow
+
+**For EVERY feature requiring a ShadCN block:**
+
+1. **Discover options:**
+   ```bash
+   npx shadcn@latest add
+   # OR visit https://ui.shadcn.com/blocks
+   ```
+
+2. **Think deeply about requirements:**
+   - What is the primary user goal for this feature?
+   - What data density is needed?
+   - How does this fit into the overall app design?
+   - What are the mobile vs desktop needs?
+   - What accessibility requirements exist?
+
+3. **Evaluate 2-3 block options:**
+   - Review code structure and complexity
+   - Check responsiveness and accessibility
+   - Consider customization effort required
+   - Assess fit with existing design language
+
+4. **Make an informed choice:**
+   - Document WHY you chose this block (in code comments or docs)
+   - Consider trade-offs (e.g., feature-rich but complex vs simple but limited)
+   - Use the `frontend-design` skill for customization after selection
+
+5. **Install and integrate:**
+   ```bash
+   npx shadcn@latest add [chosen-block-name]
+   # Follow prompts for customization
+   ```
+
+---
+
+#### Integration with Frontend Design Skill
+
+**IMPORTANT:** ShadCN blocks are starting points, not final designs.
+
+- **Use the `frontend-design` skill to customize blocks** after installation
+- Blocks provide:
+  - Accessible markup (ARIA, keyboard nav)
+  - Responsive layout structure
+  - Tailwind + Radix UI integration
+
+- **Frontend skill enhances with:**
+  - Brand-specific theming
+  - Custom animations and interactions
+  - Unique visual elements
+  - Optimized mobile experiences
+
+**Workflow:**
+```
+1. Discover & select appropriate ShadCN block
+2. Install via CLI: npx shadcn@latest add [block-name]
+3. Invoke frontend-design skill for customization
+4. Maintain accessibility features from original block
+```
+
+---
+
+#### References
+
+- **ShadCN Blocks Gallery:** https://ui.shadcn.com/blocks (browse all available blocks)
+- **ShadCN CLI Docs:** https://ui.shadcn.com/docs/cli (installation and usage)
+- **ShadCN MCP:** Use for automated block management and discovery
 
 ---
 
@@ -316,6 +598,120 @@
 - Type checking
 - Commit message validation (conventional commits)
 
+### Test-First Workflow
+
+**For Critical Paths (Auth, RBAC, Payments, Admin) - TDD Required:**
+1. **Write test file first**
+   - Location: `src/features/[feature]/__tests__/[component].test.ts`
+   - Example: `src/features/auth/__tests__/login.test.ts`
+2. **Write failing test with expected behavior**
+   ```typescript
+   describe('Login', () => {
+     it('should authenticate user with valid credentials', async () => {
+       // Test code here - will fail initially
+     });
+   });
+   ```
+3. **Implement feature to make test pass**
+   - Write minimal code to satisfy test
+   - Refactor for quality
+4. **Verify coverage >80%**
+   ```bash
+   npm test -- --coverage
+   # Check coverage report for feature
+   ```
+5. **Pre-commit hook blocks commits if coverage drops**
+
+**For Standard Features (Forms, Components, Business Logic):**
+1. **Build feature first**
+   - Implement component or function
+   - Manual testing during development
+2. **Write tests after (target 30% coverage)**
+   - Focus on edge cases and key interactions
+   - Don't test trivial code
+3. **Refine based on test findings**
+   - Fix bugs discovered during test writing
+   - Add error handling as needed
+
+**Coverage Enforcement:**
+- Pre-commit hook runs: `npm test -- --coverage`
+- Critical paths below 80% → Commit blocked
+- Overall project below 30% → Commit blocked
+- Override only with explicit justification in commit message
+
+### Supabase Type Generation Workflow
+
+**Initial Setup (after database schema is created):**
+```bash
+# Generate TypeScript types from Supabase schema
+npm run supabase:gen
+
+# Output: src/lib/database.types.ts
+```
+
+**During Development (after any schema change):**
+1. **Create or modify migration**
+   ```bash
+   supabase migration new add_new_table
+   # Edit /supabase/migrations/TIMESTAMP_add_new_table.sql
+   ```
+2. **Apply migration locally**
+   ```bash
+   supabase migration up
+   ```
+3. **Regenerate TypeScript types**
+   ```bash
+   npm run supabase:gen
+   ```
+4. **Verify types compile**
+   ```bash
+   npm run type-check
+   # Expect: zero errors
+   ```
+
+**Using Generated Types in Components:**
+```typescript
+import type { Database } from '@/lib/database.types';
+
+// Table row types (existing records)
+type User = Database['public']['Tables']['users']['Row'];
+type Organization = Database['public']['Tables']['organizations']['Row'];
+type Member = Database['public']['Tables']['organization_members']['Row'];
+
+// Insert types (new records)
+type OrgInsert = Database['public']['Tables']['organizations']['Insert'];
+type MemberInsert = Database['public']['Tables']['organization_members']['Insert'];
+
+// Update types (partial updates)
+type OrgUpdate = Database['public']['Tables']['organizations']['Update'];
+
+// Use in components
+function UserProfile({ user }: { user: User }) {
+  // TypeScript knows exact shape of user
+}
+```
+
+**NPM Script (add to package.json):**
+```json
+{
+  "scripts": {
+    "supabase:gen": "supabase gen types typescript --local > src/lib/database.types.ts"
+  }
+}
+```
+
+**When to Regenerate:**
+- ✅ After creating new migration
+- ✅ After applying migration locally
+- ✅ Before committing schema changes
+- ✅ After pulling new migrations from git
+- ❌ Not needed if only writing application code (no schema changes)
+
+**CI/CD Integration:**
+- GitHub Actions auto-generates types on merge to main
+- Verifies types compile before deployment
+- Fails build if type errors detected
+
 ### CI/CD Pipeline (GitHub Actions)
 
 **On Pull Request:**
@@ -346,28 +742,110 @@
 - MCP integration for AI-assisted test generation
 
 ### End-of-Build Validation
-Before considering the build complete, run through this checklist:
+
+Before considering the build complete, run through this checklist with **exact commands**:
 
 **Required Checks:**
-- ✅ **Full test suite passes** - `npm test` (all unit + integration tests)
-- ✅ **White screen detection** - Smoke tests verify key pages render
-- ✅ **TypeScript compilation** - `npm run type-check` or `tsc --noEmit` (zero errors)
-- ✅ **ESLint validation** - `npm run lint` (zero errors, warnings acceptable)
-- ✅ **Production build succeeds** - `npm run build` (no build errors)
-- ✅ **No console errors** - Check key pages (landing, login, dashboard, admin) for console errors
-- ✅ **Demo mode works** - Test auto-fallback, demo login buttons, admin demo access
-- ✅ **Real mode works** - Test with actual Supabase credentials
+
+- ✅ **Full test suite passes**
+  ```bash
+  npm test
+  # Expected output: "✓ X tests passed"
+  ```
+
+- ✅ **TypeScript compilation**
+  ```bash
+  npm run type-check
+  # Or: npx tsc --noEmit
+  # Expected output: No errors, exit code 0
+  ```
+
+- ✅ **ESLint validation**
+  ```bash
+  npm run lint
+  # Expected output: No errors (warnings acceptable)
+  ```
+
+- ✅ **Production build succeeds**
+  ```bash
+  npm run build
+  # Expected output: Build completed, dist/ folder created
+  # Check: No size warnings, all chunks optimized
+  ```
+
+- ✅ **White screen detection**
+  ```bash
+  npm run dev
+  # Manually check these pages render without crashes:
+  # - Landing page (/)
+  # - Login page (/login)
+  # - Dashboard (/dashboard)
+  # - Admin dashboard (/admin)
+  ```
+
+- ✅ **No console errors**
+  ```bash
+  # Open browser console (F12) for each page above
+  # Expected: No red errors (warnings acceptable)
+  ```
+
+- ✅ **Demo mode works**
+  ```bash
+  # Remove Supabase credentials from .env.local
+  rm .env.local  # or comment out VITE_SUPABASE_* vars
+  npm run dev
+  # Expected:
+  # - Demo mode banner appears
+  # - Demo login buttons visible on /login and /admin/login
+  # - Can login as demo user
+  # - Can login as demo admin
+  ```
+
+- ✅ **Real mode works**
+  ```bash
+  # Add valid Supabase credentials to .env.local
+  npm run dev
+  # Expected:
+  # - No demo mode banner
+  # - Real Supabase connection
+  # - Auth flows work with real backend
+  ```
 
 **Optional but Recommended:**
-- Preview deployment works (Vercel preview URL)
-- E2E tests pass (`npm run test:e2e`)
-- Database migrations apply cleanly
-- All environment variables documented
+
+- **E2E tests pass**
+  ```bash
+  npm run test:e2e
+  # Expected: Playwright tests pass
+  ```
+
+- **Preview deployment works**
+  ```bash
+  vercel deploy --prebuilt
+  # Or: Push to PR, check Vercel preview URL
+  ```
+
+- **Database migrations apply cleanly**
+  ```bash
+  supabase db reset  # Local test
+  # Expected: All migrations apply without errors
+  ```
+
+- **Coverage thresholds met**
+  ```bash
+  npm test -- --coverage
+  # Expected:
+  # - Critical paths (auth, RBAC): >80%
+  # - Overall project: >30%
+  ```
 
 **If anything fails:**
 - Document the issue in `/docs/notes.md`
-- Include error messages and context
-- Note if it's blocking or can be fixed later
+- Include:
+  - Exact command that failed
+  - Full error message
+  - Steps attempted to fix
+  - Whether it's blocking or can be fixed later
 
 ---
 
@@ -593,6 +1071,103 @@ Human: Merge → AI archives task
 
 ---
 
+### Migration Workflow
+
+**Complete workflow for database schema changes:**
+
+#### Before Any Database Changes:
+1. **Define schema in `/docs/specs/database-schema.md`**
+   - Document table structure, columns, types
+   - Define RLS policies
+   - Specify foreign keys and indexes
+
+2. **Create numbered migration file:**
+   ```bash
+   supabase migration new add_organizations_table
+   # Creates: /supabase/migrations/YYYYMMDDHHMMSS_add_organizations_table.sql
+   ```
+
+3. **Write SQL in migration file:**
+   ```sql
+   -- /supabase/migrations/YYYYMMDDHHMMSS_add_organizations_table.sql
+
+   CREATE TABLE organizations (
+     id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+     name text NOT NULL,
+     created_at timestamptz DEFAULT now(),
+     updated_at timestamptz DEFAULT now()
+   );
+
+   -- RLS Policies
+   ALTER TABLE organizations ENABLE ROW LEVEL SECURITY;
+
+   CREATE POLICY "org_isolation" ON organizations
+     FOR SELECT USING (
+       id IN (
+         SELECT organization_id FROM organization_members
+         WHERE user_id = auth.uid()
+       )
+     );
+
+   -- Indexes
+   CREATE INDEX idx_organizations_created_at ON organizations(created_at DESC);
+   ```
+
+4. **Apply migration locally:**
+   ```bash
+   supabase migration up
+   # Expected: Migration applied successfully
+   ```
+
+5. **Verify migration applied:**
+   ```bash
+   supabase db diff
+   # Expected: No differences (migration is clean)
+   ```
+
+6. **Generate TypeScript types:**
+   ```bash
+   npm run supabase:gen
+   # Updates: src/lib/database.types.ts
+   ```
+
+7. **Verify types compile:**
+   ```bash
+   npm run type-check
+   # Expected: Zero TypeScript errors
+   ```
+
+#### In Production (CI/CD):
+- **Automated on merge to main:**
+  - GitHub Actions runs: `supabase db push`
+  - Migrations auto-apply to production database
+  - Types regenerated and committed
+  - Build fails if migration errors occur
+
+- **Verify in Supabase Dashboard after deploy:**
+  - Check Tables → Confirm new table exists
+  - Check Policies → Confirm RLS policies active
+  - Check Indexes → Confirm performance indexes created
+
+#### Rollback (Development Only):
+```bash
+# DANGER: Destroys local database and reapplies all migrations
+supabase db reset
+
+# Production migrations are PERMANENT - cannot rollback
+# Plan migrations carefully before merging to main
+```
+
+#### Migration Best Practices:
+- ✅ Always include RLS policies in migration
+- ✅ Create indexes for foreign keys and frequent queries
+- ✅ Test migration locally before pushing to production
+- ✅ Write idempotent migrations when possible (`CREATE IF NOT EXISTS`)
+- ❌ Never edit existing migrations after they're merged
+- ❌ Never run `supabase db reset` on production
+
+---
+
 ### Documentation Generation Strategy
 
 **Create upfront (before coding):**
@@ -616,6 +1191,101 @@ Human: Merge → AI archives task
 
 ## 9. Summary
 
+### Build Phases (In Order)
+
+**Clear dependency graph for implementation:**
+
+#### Phase 0: Specifications & Planning (REQUIRED FIRST)
+**Status:** BLOCKING - Must complete before Phase 1
+- Create `/docs/specs/database-schema.md` (collaborate with user)
+- Create `/docs/specs/rbac-spec.md` (collaborate with user)
+- Review and finalize both specs
+- **Output:** Complete schema + permission matrix
+
+#### Phase 1: Project Setup
+**Dependencies:** Phase 0 complete
+- Initialize Vite + React + TypeScript
+  ```bash
+  npm create vite@latest byo-v4 -- --template react-ts
+  ```
+- Install core dependencies (Tailwind, ShadCN, Supabase, Vitest)
+- Configure ESLint v9 + Prettier + Husky
+- Set up Supabase CLI and local development
+  ```bash
+  supabase init
+  ```
+- Install and authenticate 5 MCPs (GitHub, Vercel, Supabase, ShadCN, Playwright)
+- Create `.env.example` with required variables
+- **Output:** Working dev environment, MCP ecosystem ready
+
+#### Phase 2: Database & Auth Foundation
+**Dependencies:** Phase 1 complete, database-schema.md finalized
+- Create initial migration from schema spec
+  ```bash
+  supabase migration new initial_schema
+  ```
+- Write SQL for all tables (users, organizations, members, invitations, system_roles, system_settings)
+- Write RLS policies for all tables
+- Apply migration locally: `supabase migration up`
+- Generate TypeScript types: `npm run supabase:gen`
+- Implement Supabase client (real + mock for demo mode)
+- Build demo mode infrastructure (mock client, banner, demo login)
+- Implement auth flows (login, signup, logout, password reset)
+- Write TDD tests for auth (>80% coverage required)
+- **Output:** Auth system works in both real and demo mode
+
+#### Phase 3: RBAC & Multi-Tenancy
+**Dependencies:** Phase 2 complete, rbac-spec.md finalized
+- Implement platform roles (Admin, Developer, Support)
+- Implement organization roles (Owner, Admin, Member, Viewer)
+- Create authorization hooks (`useAuth`, `usePermissions`, `useRole`)
+- Build organization management (create, read, update, delete)
+- Build member management (invite, assign roles, remove)
+- Build invitation system (email invites, magic links, expiration)
+- Write TDD tests for RBAC (>80% coverage required)
+- **Output:** Multi-tenant system with dual RBAC working
+
+#### Phase 4: Core Features & UI
+**Dependencies:** Phase 3 complete
+- Install ShadCN blocks (dashboard, sidebar, login, settings, profile)
+- Build public pages (landing page, auth pages)
+- Build authenticated pages (dashboard, account, settings)
+- Build layout components (sidebar, header, footer)
+- Build organization features (org dashboard, org settings)
+- Implement optimistic UI patterns
+- Add loading states and error handling
+- Write tests for business logic (30% coverage target)
+- **Output:** Functional SaaS app with core features
+
+#### Phase 5: Admin Dashboard & Platform Features
+**Dependencies:** Phase 4 complete
+- Build admin dashboard (system overview, analytics)
+- Build user management (view users, assign platform roles)
+- Build demo mode toggle (admin control in system_settings)
+- Build activity monitoring (audit logs, user actions)
+- Build system settings (feature flags, maintenance mode)
+- Write TDD tests for admin functions (>80% coverage required)
+- **Output:** Platform admin can manage entire system
+
+#### Phase 6: Testing & Quality
+**Dependencies:** Phase 5 complete
+- Review all test coverage (critical paths >80%, overall >30%)
+- Set up Playwright E2E tests (auth flow, org flow, admin flow)
+- Configure Husky pre-commit hooks (test, lint, type-check)
+- Run full validation checklist (see End-of-Build Validation)
+- Fix any failing tests or quality issues
+- **Output:** High-quality, well-tested codebase
+
+#### Phase 7: CI/CD & Deployment
+**Dependencies:** Phase 6 complete
+- Set up GitHub Actions workflows (lint, test, build, deploy)
+- Configure Vercel deployment (production + preview)
+- Set up Supabase production project
+- Configure production environment variables
+- Test deployment pipeline (PR → merge → deploy)
+- Run smoke tests on production
+- **Output:** Automated CI/CD pipeline, app deployed to Vercel
+
 ### Execution Instructions
 
 **For Claude Code:**
@@ -624,19 +1294,28 @@ Human: Merge → AI archives task
    - Create `/docs/specs/rbac-spec.md` with permission matrix and role definitions
    - These are BLOCKING requirements - cannot proceed without them
    - Collaborate with user to finalize both specs before writing application code
-1. **Follow this entire prompt and build until you have a useable app**
+
+1. **Follow build phases in order** (Phase 0 → Phase 7)
+   - Do not skip phases or work out of order
+   - Each phase depends on previous phases being complete
+   - Use TodoWrite tool to track progress within each phase
+
+2. **Follow this entire prompt and build until you have a useable app**
    - This is not just a planning document
    - Implement all features described
    - Create a functional, deployable application
-2. **If blocked on something:**
+
+3. **If blocked on something:**
    - Document the blocker in `/docs/notes.md`
    - Include what was attempted and why it failed
-   - Move on to other tasks, don't get stuck
-3. **Document this build session:**
+   - Move on to other tasks within the same phase, don't get stuck
+
+4. **Document this build session:**
    - Record conversation highlights in `/docs/notes.md`
    - Note any user requests or modifications to the prompt
    - Track decisions made during implementation
-4. **Complete the validation checklist:**
+
+5. **Complete the validation checklist:**
    - Run all checks in "End-of-Build Validation" section
    - Fix critical issues before marking complete
    - Document any non-critical issues for later
@@ -686,6 +1365,6 @@ Give this prompt to Claude Code in plan mode. Claude will:
 7. Deploy to Vercel
 
 ### Implementation Tracking
-Let Claude Code decide the implementation phases and order based on dependencies and best practices with status tracking
+Follow the Build Phases (Phase 0-7) outlined above with status tracking via TodoWrite tool.
 
 **This is a template.** Customize the business logic in the dashboard and build your unique SaaS product on this solid foundation.
